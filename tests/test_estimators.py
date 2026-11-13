@@ -151,6 +151,14 @@ def test_optimal_lambda_formula() -> None:
     assert ppi_pp_mean(y, f, fu).lam == pytest.approx(expected, rel=1e-12)
 
 
+def test_ppi_pp_is_the_regression_estimator_on_all_judge_scores() -> None:
+    y, f, fu = noisy_rating_sample(np.random.default_rng(21), 90, 600)
+    pooled = np.concatenate([f, fu])
+    slope = np.cov(y, f, ddof=1)[0, 1] / pooled.var(ddof=1)
+    expected = y.mean() + slope * (pooled.mean() - f.mean())
+    assert ppi_pp_mean(y, f, fu).estimate == pytest.approx(expected, rel=1e-12)
+
+
 def test_variance_at_optimal_lambda_closed_form() -> None:
     var_y, var_f, rho, n, n_unl = 2.0, 0.5, 0.6, 120, 880
     cov = rho * math.sqrt(var_y * var_f)
