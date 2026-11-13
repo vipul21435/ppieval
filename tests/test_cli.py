@@ -15,7 +15,7 @@ from ppieval.data import load_dataset
 
 REPO = Path(__file__).resolve().parents[1]
 EXAMPLE = REPO / "examples" / "small_example.csv"
-METHODS = ["human-only", "judge-only", "ppi", "ppi++"]
+METHODS = ["human-only", "judge-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen"]
 
 
 def write_rows(
@@ -136,7 +136,14 @@ def test_module_entry_point_runs_the_example() -> None:
     assert (payload["rows"], payload["labelled"]) == (1000, 100)
     # The numbers quoted in the README quickstart.
     shown = {row["method"]: round(row["estimate"], 4) for row in payload["estimates"]}
-    assert shown == {"human-only": 0.67, "judge-only": 0.777, "ppi": 0.7, "ppi++": 0.6869}
+    assert shown == {
+        "human-only": 0.67,
+        "judge-only": 0.777,
+        "ppi": 0.7,
+        "ppi++": 0.6869,
+        "ppi-stratified": 0.6855,
+        "rogan-gladen": 0.7317,
+    }
 
 
 def test_example_generator_writes_the_documented_shape(

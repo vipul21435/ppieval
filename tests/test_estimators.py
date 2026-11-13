@@ -232,15 +232,16 @@ def test_simulated_coverage_with_a_biased_judge() -> None:
     """
     rng = np.random.default_rng(2026)
     truth, reps = 0.7, 2000
-    hits = {"human-only": 0, "judge-only": 0, "ppi": 0, "ppi++": 0}
-    widths = {name: 0.0 for name in hits}
+    names = ["human-only", "judge-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen"]
+    hits = {name: 0 for name in names}
+    widths = {name: 0.0 for name in names}
     for _ in range(reps):
         y, f, fu = biased_binary_sample(rng, 100, 1000, p=truth)
         for est in estimate_all(y, f, fu):
             hits[est.method] += est.lo <= truth <= est.hi
             widths[est.method] += est.width / reps
     coverage = {name: count / reps for name, count in hits.items()}
-    for name in ("human-only", "ppi", "ppi++"):
+    for name in ("human-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen"):
         assert 0.93 <= coverage[name] <= 0.97, (name, coverage[name])
     assert coverage["judge-only"] < 0.05
     assert widths["ppi++"] < widths["human-only"]
@@ -253,10 +254,12 @@ def test_simulated_coverage_with_a_biased_judge() -> None:
 def test_estimate_all_order_and_counts() -> None:
     y, f, fu = biased_binary_sample(np.random.default_rng(12), 30, 270)
     got = estimate_all(y, f, fu, level=0.8)
-    assert [e.method for e in got] == ["human-only", "judge-only", "ppi", "ppi++"]
+    assert [e.method for e in got] == [
+        "human-only", "judge-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen",
+    ]
     assert all(isinstance(e, Estimate) and e.level == 0.8 for e in got)
-    assert [(e.n_human, e.n_judge) for e in got] == [(30, 0), (0, 300), (30, 300), (30, 300)]
-    assert [e.lam is None for e in got] == [True, True, False, False]
+    assert [(e.n_human, e.n_judge) for e in got] == [(30, 0), (0, 300)] + [(30, 300)] * 4
+    assert [e.lam is None for e in got] == [True, True, False, False, True, True]
 
 
 def test_without_unlabelled_rows_ppi_pp_is_the_classical_estimate() -> None:

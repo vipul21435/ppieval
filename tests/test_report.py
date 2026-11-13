@@ -22,7 +22,7 @@ def test_table_has_one_row_per_estimate_and_the_width_ratio() -> None:
     lines = estimates_table(estimates, digits=3).splitlines()
     assert len(lines) == 2 + len(estimates)
     rows = [[cell.strip() for cell in line.strip("|").split("|")] for line in lines[2:]]
-    assert [row[0] for row in rows] == ["human-only", "judge-only", "ppi", "ppi++"]
+    assert [row[0] for row in rows][:4] == ["human-only", "judge-only", "ppi", "ppi++"]
     human_only = estimates[0]
     assert rows[0][1] == f"{human_only.estimate:.3f}"
     assert rows[0][3] == f"[{human_only.lo:.3f}, {human_only.hi:.3f}]"
@@ -64,5 +64,5 @@ def test_markdown_and_json_agree_on_the_counts() -> None:
     assert text.endswith("\n")
     payload = json.loads(estimate_json(data, estimates))
     assert (payload["rows"], payload["labelled"], payload["unlabelled"]) == (10, 4, 6)
-    assert len(payload["estimates"]) == 4
+    assert len(payload["estimates"]) == len(estimates)
     assert payload["estimates"][3]["lam"] == pytest.approx(estimates[3].lam)
