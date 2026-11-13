@@ -13,6 +13,7 @@ First release.
 - Planning: effective sample size, human labels needed for a target width, and uniform or stratified sampling of
   items to label with the weights the estimators take (`ppieval plan`).
 - Diagnostics: judge-human correlation and agreement, sensitivity and specificity, the rectifier with its interval,
-  and a two-sample Kolmogorov-Smirnov check that labelled rows look like a random subset.
+  a two-sample Kolmogorov-Smirnov check that labelled rows look like a random subset, and warnings where the normal
+  intervals are known to be too narrow (few labels, a rare class, skewed labels, a judge error with zero variance).
 - `ppieval simulate` and `ppieval replay`, with a replay on the MT-Bench human judgments in the README.
 - Markdown and JSON output for every command; JSON Lines, CSV and TSV input.
