@@ -280,7 +280,7 @@ $ ppieval simulate --qualities 0.6 0.9 --fractions 0.1 --reps 1000 --seed 0
 | ppi | 0.941 | 0.1785 | 1.29 | +0.0024 | 120 |
 | ppi++ | 0.942 | 0.1356 | 0.98 | +0.0017 | 209 |
 | ppi-stratified | 0.942 | 0.1362 | 0.98 | +0.0015 | 207 |
-| rogan-gladen | 0.981 | 0.6874 | 4.96 | +0.0028 | 1 |
+| rogan-gladen | 0.981 | 0.6874 | 4.96 | +0.0028 | 8 |
 
 ## judge quality 0.9 (sensitivity 1, specificity 0.8), 10 % of human labels kept (n = 200)
 

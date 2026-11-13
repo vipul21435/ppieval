@@ -13,7 +13,13 @@ __all__ = ["replay", "simulate"]
 
 
 class _Tally:
-    """Running coverage, width and error of each method over repetitions."""
+    """Running coverage, width and error of each method over repetitions.
+
+    The effective sample size of a method is ``n`` times the mean squared
+    width of the human-only interval over the mean squared width of its own
+    interval. For a normal interval that is the ratio of the variances; for
+    an interval truncated to [0, 1] it follows the interval that is reported.
+    """
 
     def __init__(self, truth: float) -> None:
         self.truth = truth
@@ -26,12 +32,12 @@ class _Tally:
             row[1] += float(est.lo <= self.truth <= est.hi)
             row[2] += est.width
             row[3] += est.estimate - self.truth
-            row[4] += est.se**2
+            row[4] += est.width**2
 
     def summary(self, n: int) -> list[dict[str, Any]]:
         base = self.rows.get("human-only")
         out = []
-        for method, (used, hits, width, error, variance) in self.rows.items():
+        for method, (used, hits, width, error, squared) in self.rows.items():
             row: dict[str, Any] = {
                 "method": method,
                 "reps_used": int(used),
@@ -43,8 +49,8 @@ class _Tally:
             }
             if base is not None and base[2] > 0.0:
                 row["relative_width"] = (width / used) / (base[2] / base[0])
-            if base is not None and variance > 0.0 and method != "judge-only":
-                row["effective_n"] = n * (base[4] / base[0]) / (variance / used)
+            if base is not None and squared > 0.0 and method != "judge-only":
+                row["effective_n"] = n * (base[4] / base[0]) / (squared / used)
             out.append(row)
         return out
 
@@ -125,8 +131,8 @@ def replay(
     judge-only interval uses no human label, so it is the same in every
     repetition and its coverage is 0 or 1.
 
-    ``effective_n`` is ``n`` times the mean human-only variance over the mean
-    variance of the method. Because the target is the mean over the rows at
+    ``effective_n`` is ``n`` times the mean squared width of the human-only
+    interval over that of the method. Because the target is the mean over the rows at
     hand and not over a wider population, intervals built for the latter
     over-cover as the kept fraction grows.
     """

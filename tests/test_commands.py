@@ -57,6 +57,34 @@ def test_simulate_reports_coverage_for_every_method() -> None:
         simulate(fractions=(1.0,), rows=50, reps=1)
 
 
+def test_effective_n_follows_the_reported_interval() -> None:
+    """A Rogan-Gladen interval truncated to [0, 1] must not report the untruncated variance."""
+    from ppieval.estimators import Estimate
+    from ppieval.simulate import _Tally
+
+    tally = _Tally(truth=0.5)
+    tally.add(
+        [
+            Estimate("human-only", 0.5, 0.05, 0.4, 0.6, 0.95, 200, 0),
+            Estimate("ppi++", 0.5, 0.025, 0.45, 0.55, 0.95, 200, 2000, 0.5),
+            Estimate("rogan-gladen", 0.5, 5.0, 0.0, 1.0, 0.95, 200, 2000),
+        ]
+    )
+    rows = {row["method"]: row for row in tally.summary(200)}
+    assert rows["human-only"]["effective_n"] == pytest.approx(200)
+    assert rows["ppi++"]["effective_n"] == pytest.approx(800)
+    assert rows["rogan-gladen"]["relative_width"] == pytest.approx(5.0)
+    assert rows["rogan-gladen"]["effective_n"] == pytest.approx(200 / 25)
+
+    weak = simulate(qualities=(0.6,), fractions=(0.1,), rows=1000, reps=100, seed=3)
+    by_name = {row["method"]: row for row in weak["cells"][0]["methods"]}
+    truncated = by_name["rogan-gladen"]
+    assert truncated["relative_width"] > 3.0
+    assert truncated["effective_n"] == pytest.approx(
+        100 / truncated["relative_width"] ** 2, rel=0.35
+    )
+
+
 def test_replay_targets_the_mean_of_all_human_labels() -> None:
     rng = np.random.default_rng(2)
     human = (rng.random(800) < 0.55).astype(float)
