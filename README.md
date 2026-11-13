@@ -379,6 +379,9 @@ installation is far slower for the same reason. That is why it is a separate, op
 - [evalstats](https://github.com/vipul21435/evalstats) covers error bars and paired comparisons when every item is
   labelled.
 - [judgebias](https://github.com/vipul21435/judgebias) audits an LLM judge.
+- [labelfuse](https://github.com/vipul21435/labelfuse): aggregates noisy labels from several annotators into one label with a probability, and audits the annotators.
+- [metaeval](https://github.com/vipul21435/metaeval): correlates automatic metrics or graders with human ratings, with the grouping stated and an interval on every number.
+- [calibcheck](https://github.com/vipul21435/calibcheck): measures how well a model's confidence matches how often it is right, with held-out recalibration checks.
 
 ## Licence
 
