@@ -305,15 +305,18 @@ construction its mean is 0.10 above the truth.
 
 ### Where the intervals fail
 
-The normal intervals need enough human labels. Three seeded checks with 2,000 rows and 1,000 repetitions each
-(`python examples/coverage_checks.py`; a 0/1 judge with sensitivity 0.95 and specificity 0.90 in the first two rows, a
-noisy linear judge in the third), coverage of the 95 % intervals:
+The normal intervals need enough human labels. Seeded checks with 2,000 rows per repetition
+(`python examples/coverage_checks.py`; 1,000 repetitions for the first three rows, 3,000 for the two weighted ones; a
+0/1 judge with sensitivity 0.95 and specificity 0.90 in the first two rows, a noisy linear judge in the third),
+coverage of the 95 % intervals:
 
 | case | human-only | ppi | ppi++ | ppi-stratified | rogan-gladen |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 10 labels, P(1) = 0.5 | 0.897 | 0.682 | 0.782 | 0.782 | 0.682 |
 | 100 labels, P(1) = 0.03 | 0.786 | 0.949 | 0.864 | 0.890 | 0.953 |
 | 30 labels, log-normal | 0.881 | 0.945 | 0.848 | 0.849 |  |
+| weighted, each row labelled independently | 0.946 | 0.943 | 0.941 |  |  |
+| weighted, fixed-size sample by verdict | 0.982 | 0.974 | 0.950 |  |  |
 
 With 10 labels the judge often agrees with every one of them; the estimated variance of its error is then zero and
 the ppi interval collapses onto the judge's mean. With a 3 % class and 100 labels, about three labelled rows are
@@ -321,6 +324,12 @@ positive, and the variances that the human-only and ppi++ intervals rest on are 
 prints a warning for each of these situations: fewer than 30 labels, fewer than 10 labels in the rarer class of a
 0/1 label, skewed labels with fewer than 25 x skewness^2 of them, and a judge error with zero variance on the
 labelled rows. It does not correct the intervals.
+
+The last two rows use inverse-probability weights with a 0/1 judge of sensitivity 0.9 and specificity 0.7. When each
+row is labelled independently, with probability 0.25 after a verdict of 0 and 0.04 after a verdict of 1, the
+weighted intervals cover slightly less than 0.95 (the Monte Carlo standard error of each figure is 0.004). When a
+fixed 125 rows are drawn from each verdict, as `plan --sample --method stratified --allocation equal` does, the
+human-only and ppi intervals are conservative, because the variance formula ignores the stratification.
 
 ## Tests
 
@@ -346,9 +355,12 @@ the best `lam` exceeds 1.
   goes unnoticed.
 - Stratified PPI and Rogan-Gladen take neither weights nor clusters and are left out when either is given.
   Rogan-Gladen needs 0/1 labels and a 0/1 judge and is unstable when sensitivity + specificity is close to 1.
-- With weights the variance is a linearisation that assumes rows were chosen independently; for the fixed-size
-  stratified samples that `plan --sample` draws it is conservative. With weights or clusters `lam` minimises the
-  estimated variance and takes the judge's variance from the labelled rows, not from all rows.
+- With weights the variance is a linearisation, and it is not conservative in general. With rows labelled
+  independently by judge verdict and the correct weights, measured coverage was 0.946 for human-only, 0.943 for ppi
+  and 0.941 for ppi++ (3,000 repetitions, standard error 0.004); with a fixed-size sample from each verdict it was
+  0.982, 0.974 and 0.950. With weights or clusters `lam` minimises the same estimated variance that the interval
+  then reports, which is a likely reason for ppi++ sitting lowest, and it takes the judge's variance from the
+  labelled rows, not from all rows.
 - The bootstrap is the percentile bootstrap only and is not available with weights.
 - `replay` and the intervals have no finite-population correction, hence the over-coverage at large kept fractions.
 - `compare` handles two systems at a time by paired differences; it does not rank many systems, and the

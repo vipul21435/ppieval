@@ -262,3 +262,22 @@ def test_weights_remove_the_bias_of_labelling_by_judge_score() -> None:
     assert naive_error < -0.15
     for name, count in hits.items():
         assert 0.92 <= count / reps <= 0.98, (name, count / reps)
+
+
+def test_weighted_coverage_checks_quoted_in_the_readme() -> None:
+    """Both weighted designs cover near the level at a small number of repetitions.
+
+    The ordering quoted in the README (a fixed-size sample covers more) comes from 3,000
+    repetitions and is not asserted here: 250 repetitions cannot resolve it.
+    """
+    import runpy
+    from pathlib import Path
+
+    script = Path(__file__).resolve().parents[1] / "examples" / "coverage_checks.py"
+    weighted_case = runpy.run_path(str(script))["weighted_case"]
+    independent = weighted_case(fixed_size=False, reps=250, seed=1)
+    fixed = weighted_case(fixed_size=True, reps=250, seed=1)
+    assert set(independent) == set(fixed) == {"human-only", "ppi", "ppi++"}
+    for name in independent:
+        assert 0.90 <= independent[name] <= 0.99, (name, independent[name])
+        assert 0.92 <= fixed[name] <= 1.0, (name, fixed[name])
