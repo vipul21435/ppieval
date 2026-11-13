@@ -303,6 +303,25 @@ ppi++ is 0.63 times the human-only width. Its coverage in the two cells is 0.940
 nominal 0.95 (the Monte Carlo standard error of each figure is 0.007). The judge-only interval never covers: by
 construction its mean is 0.10 above the truth.
 
+### Where the intervals fail
+
+The normal intervals need enough human labels. Three seeded checks with 2,000 rows and 1,000 repetitions each
+(`python examples/coverage_checks.py`; a 0/1 judge with sensitivity 0.95 and specificity 0.90 in the first two rows, a
+noisy linear judge in the third), coverage of the 95 % intervals:
+
+| case | human-only | ppi | ppi++ | ppi-stratified | rogan-gladen |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 10 labels, P(1) = 0.5 | 0.897 | 0.682 | 0.782 | 0.782 | 0.682 |
+| 100 labels, P(1) = 0.03 | 0.786 | 0.949 | 0.864 | 0.890 | 0.953 |
+| 30 labels, log-normal | 0.881 | 0.945 | 0.848 | 0.849 |  |
+
+With 10 labels the judge often agrees with every one of them; the estimated variance of its error is then zero and
+the ppi interval collapses onto the judge's mean. With a 3 % class and 100 labels, about three labelled rows are
+positive, and the variances that the human-only and ppi++ intervals rest on are badly estimated. `ppieval estimate`
+prints a warning for each of these situations: fewer than 30 labels, fewer than 10 labels in the rarer class of a
+0/1 label, skewed labels with fewer than 25 x skewness^2 of them, and a judge error with zero variance on the
+labelled rows. It does not correct the intervals.
+
 ## Tests
 
 `uv run --extra dev pytest -q` runs closed forms (`lam = 0` is the human-only estimate, `lam = 1` is ppi, a perfect
@@ -317,8 +336,11 @@ the best `lam` exceeds 1.
 
 ## Limitations
 
-- The intervals are asymptotic. With few human labels, or a proportion close to 0 or 1, the normal approximation is
-  poor; a stratum or a class in which all labels agree contributes zero variance.
+- The intervals are asymptotic and are too narrow with few labels, a rare class or skewed labels (see "Where the
+  intervals fail" above): measured coverage of the 95 % intervals fell to 0.682 for ppi with 10 labels, to 0.786 for
+  human-only with a 3 % class and 100 labels, and to 0.848 for ppi++ with 30 log-normal labels. The cause is a sample
+  variance of zero, or close to it, when the labelled rows happen to agree. `ppieval estimate` warns in these cases;
+  no small-sample correction (a t quantile, a variance floor) is implemented, so treat such intervals as too narrow.
 - The labelled rows must be a uniform random subset of all rows, or come with correct weights. The
   Kolmogorov-Smirnov check only sees a difference in judge scores; labelling the easy items within each judge score
   goes unnoticed.

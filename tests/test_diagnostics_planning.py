@@ -86,6 +86,57 @@ def test_diagnostics_other_warnings() -> None:
     assert any("not positively correlated" in t for t in diagnose(y, 1.0 - y, y).warnings)
 
 
+def test_diagnostics_warn_about_a_rare_class() -> None:
+    rng = np.random.default_rng(7)
+    y = np.array([1.0] * 3 + [0.0] * 97)
+    f = np.where(rng.random(100) < 0.9, y, 1.0 - y)
+    fu = (rng.random(900) < 0.1).astype(float)
+    rare = diagnose(y, f, fu)
+    assert any("only 3 of the 100 human labels are in the rarer class" in t for t in rare.warnings)
+    balanced = np.array([1.0, 0.0] * 50)
+    judge = np.where(rng.random(100) < 0.9, balanced, 1.0 - balanced)
+    assert diagnose(balanced, judge, (rng.random(900) < 0.5).astype(float)).warnings == ()
+    # Ten in the rarer class is the threshold.
+    edge = np.array([1.0] * 10 + [0.0] * 90)
+    assert not any("rarer class" in t for t in diagnose(edge, 1.0 - edge, fu).warnings)
+
+
+def test_diagnostics_warn_when_the_judge_error_has_no_variance() -> None:
+    y = np.array([1.0, 0.0] * 20)
+    fu = np.array([1.0, 0.0] * 100)
+    agrees = diagnose(y, y, fu)
+    assert any("estimated variance of that error is zero" in t for t in agrees.warnings)
+    shifted = diagnose(y, y + 0.25, fu + 0.25)
+    assert any("estimated variance of that error is zero" in t for t in shifted.warnings)
+    noisy = diagnose(y, np.where(np.arange(40) % 8 == 0, 1.0 - y, y), fu)
+    assert not any("estimated variance" in t for t in noisy.warnings)
+
+
+def test_diagnostics_warn_about_skewed_labels() -> None:
+    rng = np.random.default_rng(8)
+    y = rng.lognormal(0.0, 1.0, 2000)
+    f = 0.8 * y + rng.normal(0.0, 0.5, 2000)
+    few = diagnose(y[:30], f[:30], f[30:])
+    assert any("the human labels are skewed" in t for t in few.warnings)
+    normal = rng.normal(0.0, 1.0, 2000)
+    assert diagnose(normal[:200], normal[:200] + rng.normal(0, 1, 200), normal[200:]).warnings == ()
+
+
+def test_the_documented_small_sample_under_coverage_is_real() -> None:
+    """The cases quoted under Limitations in the README, at a smaller number of repetitions."""
+    import runpy
+    from pathlib import Path
+
+    script = Path(__file__).resolve().parents[1] / "examples" / "coverage_checks.py"
+    checks = runpy.run_path(str(script))
+    few = checks["binary_case"](10, 0.5, reps=150, seed=1)
+    assert few["ppi"] < 0.85 and few["ppi++"] < 0.9 and few["human-only"] < 0.96
+    rare = checks["binary_case"](100, 0.03, reps=150, seed=1)
+    assert rare["human-only"] < 0.9 and rare["ppi++"] < 0.94
+    skewed = checks["skewed_case"](reps=150, seed=1)
+    assert skewed["ppi++"] < 0.93 and skewed["human-only"] < 0.95
+
+
 def test_effective_sample_size_closed_forms() -> None:
     assert effective_sample_size_from_correlation(100, 900, 0.0) == 100
     assert effective_sample_size_from_correlation(100, 900, 1.0) == pytest.approx(1000)

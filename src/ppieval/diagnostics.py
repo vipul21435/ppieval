@@ -78,6 +78,12 @@ def diagnose(
     that the judge scores of labelled and unlabelled rows share a
     distribution: the labelled rows then do not look like a uniform random
     subset, which every estimator here assumes unless weights are given.
+
+    Further warnings flag the cases in which the normal intervals are known
+    to be too narrow: fewer than 30 labels; 0/1 labels with fewer than 10 in
+    the rarer class; skewed labels with fewer than ``25 * skewness**2`` of
+    them (a rule of thumb for the mean of a skewed variable); and a judge
+    error with zero sample variance on the labelled rows.
     """
     y_arr = _as_1d(y, "y")
     f_arr = _as_1d(f, "f")
@@ -118,6 +124,28 @@ def diagnose(
             )
     if n < 30:
         warnings.append("fewer than 30 human labels: the normal approximation may be poor")
+    if float(np.var(f_arr - y_arr)) == 0.0:
+        warnings.append(
+            "the judge's error is the same on every labelled row (it agrees with every human "
+            "label, or is off by a constant), so the estimated variance of that error is zero "
+            "and the ppi and ppi++ intervals are too narrow"
+        )
+    if bool(np.all((y_arr == 0.0) | (y_arr == 1.0))):
+        rare = int(min(np.sum(y_arr == 1.0), np.sum(y_arr == 0.0)))
+        if rare < 10:
+            warnings.append(
+                f"only {rare} of the {n} human labels are in the rarer class: with fewer than "
+                "10 the normal intervals are too narrow and cover less often than their level"
+            )
+    elif float(np.var(y_arr)) > 0.0:
+        centred = y_arr - np.mean(y_arr)
+        skewness = float(np.mean(centred**3) / np.mean(centred**2) ** 1.5)
+        wanted = math.ceil(25.0 * skewness * skewness)
+        if n < wanted:
+            warnings.append(
+                f"the human labels are skewed (skewness {skewness:.2f}): the normal "
+                f"approximation wants about 25 x skewness^2 = {wanted} labels and there are {n}"
+            )
     return Diagnostics(
         n, n_unl, correlation, agreement, sensitivity, specificity, rectifier,
         ks_statistic, ks_pvalue, tuple(warnings),
