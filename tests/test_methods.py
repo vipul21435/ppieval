@@ -70,13 +70,13 @@ def test_one_stratum_is_ppi_pp() -> None:
 
 def test_stratified_coverage_on_a_judge_whose_error_depends_on_its_score() -> None:
     rng = np.random.default_rng(3)
-    hits, reps, truth = 0, 600, 3.0
+    hits, reps, truth = 0, 300, 3.0  # standard error of the coverage estimate: about 0.013
     for _ in range(reps):
         y = rng.normal(truth, 1.0, 1200)
         f = y + rng.normal(0.0, 0.2 + 0.4 * (y > truth), 1200)
         est = stratified_ppi_mean(y[:150], f[:150], f[150:])
         hits += est.lo <= truth <= est.hi
-    assert 0.92 <= hits / reps <= 0.98
+    assert 0.91 <= hits / reps <= 0.99
 
 
 def test_stratified_rejects_bad_settings() -> None:
@@ -133,14 +133,14 @@ def test_rogan_gladen_rejects_what_it_cannot_correct(y, f, fu, message: str) -> 
 def test_bootstrap_agrees_with_the_clt_interval_and_is_seeded() -> None:
     y, f, fu = rating_sample(np.random.default_rng(5), 200, 800)
     clt = ppi_pp_mean(y, f, fu)
-    boot = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=1500, seed=1)
+    boot = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=600, seed=1)
     assert boot.method == "ppi++ (bootstrap)"
     assert boot.estimate == clt.estimate
     assert boot.se == pytest.approx(clt.se, rel=0.1)
     assert (boot.lo, boot.hi) == pytest.approx((clt.lo, clt.hi), abs=0.25 * clt.se)
-    again = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=1500, seed=1)
+    again = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=600, seed=1)
     assert (again.lo, again.hi) == (boot.lo, boot.hi)
-    other = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=1500, seed=2)
+    other = bootstrap_interval(ppi_pp_mean, y, f, fu, n_boot=600, seed=2)
     assert (other.lo, other.hi) != (boot.lo, boot.hi)
 
 

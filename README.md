@@ -336,12 +336,14 @@ human-only and ppi intervals are conservative, because the variance formula igno
 `uv run --extra dev pytest -q` runs closed forms (`lam = 0` is the human-only estimate, `lam = 1` is ppi, a perfect
 judge gives the full-sample variance, a useless judge leaves ppi++ at the human-only variance), comparisons with
 scipy (normal interval, Kolmogorov-Smirnov statistic and p-value), hand-worked Rogan-Gladen and stratified cases,
-and seeded simulations whose coverage must fall inside stated tolerances (0.95 ± 0.02 for 2,000 draws of the main
+and seeded simulations whose coverage must fall inside stated tolerances (0.95 ± 0.025 for 1,000 draws of the main
 simulation). `uv run --extra dev --extra reference pytest -q tests/test_ppi_python.py` compares the point estimate
 and interval with the ppi-python package (version 0.2.3 here, on Python 3.12 and 3.10). Two conventions differ and
 the tests account for both: ppi-python uses `n` denominators where ppieval uses `n - 1`, and it clips the estimated
 `lam` to [0, 1] where ppieval does not, so the two disagree on purpose for a negatively correlated judge and when
-the best `lam` exceeds 1.
+the best `lam` exceeds 1. Those eleven tests compute for a few milliseconds; in a warm environment the module takes
+about 2 s, of which 1.7 s is importing ppi-python and its dependencies (numba among them), and its first run after
+installation is far slower for the same reason. That is why it is a separate, optional step.
 
 ## Limitations
 

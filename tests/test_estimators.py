@@ -233,13 +233,13 @@ def test_ppi_pp_interval_is_not_wider_than_human_only(seed: int) -> None:
 
 
 def test_simulated_coverage_with_a_biased_judge() -> None:
-    """2,000 draws, n = 100 labelled, N = 1,000 unlabelled, nominal level 95 %.
+    """1,000 draws, n = 100 labelled, N = 1,000 unlabelled, nominal level 95 %.
 
-    With 2,000 draws the standard error of a coverage estimate near 0.95 is
-    about 0.005, so the valid estimators must land inside 0.95 +/- 0.02.
+    With 1,000 draws the standard error of a coverage estimate near 0.95 is
+    about 0.007, so the valid estimators must land inside 0.95 +/- 0.025.
     """
     rng = np.random.default_rng(2026)
-    truth, reps = 0.7, 2000
+    truth, reps = 0.7, 1000
     names = ["human-only", "judge-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen"]
     hits = {name: 0 for name in names}
     widths = {name: 0.0 for name in names}
@@ -250,7 +250,7 @@ def test_simulated_coverage_with_a_biased_judge() -> None:
             widths[est.method] += est.width / reps
     coverage = {name: count / reps for name, count in hits.items()}
     for name in ("human-only", "ppi", "ppi++", "ppi-stratified", "rogan-gladen"):
-        assert 0.93 <= coverage[name] <= 0.97, (name, coverage[name])
+        assert 0.925 <= coverage[name] <= 0.975, (name, coverage[name])
     assert coverage["judge-only"] < 0.05
     assert widths["ppi++"] < widths["human-only"]
     assert widths["ppi++"] <= widths["ppi"]

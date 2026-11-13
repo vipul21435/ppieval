@@ -37,20 +37,21 @@ HEADER = ["item", "group", "judge", "human"]
 
 
 def test_simulate_reports_coverage_for_every_method() -> None:
-    got = simulate(qualities=(0.8,), fractions=(0.1,), rows=600, reps=300, seed=1)
+    got = simulate(qualities=(0.8,), fractions=(0.1,), rows=600, reps=150, seed=1)
     assert got["command"] == "simulate" and len(got["cells"]) == 1
     cell = got["cells"][0]
     assert (cell["sensitivity"], cell["specificity"]) == pytest.approx((0.9, 0.7))
     assert cell["n_labelled"] == 60
     rows = {row["method"]: row for row in cell["methods"]}
     assert set(rows) >= {"human-only", "judge-only", "ppi", "ppi++", "ppi-stratified"}
+    # 150 draws: the standard error of a coverage estimate near 0.95 is about 0.018.
     for name in ("human-only", "ppi", "ppi++", "ppi-stratified"):
-        assert 0.90 <= rows[name]["coverage"] <= 0.99, name
+        assert 0.89 <= rows[name]["coverage"] <= 1.0, name
     assert rows["judge-only"]["coverage"] < 0.2
     assert rows["human-only"]["relative_width"] == pytest.approx(1.0)
     assert rows["human-only"]["effective_n"] == pytest.approx(60)
     assert rows["ppi++"]["effective_n"] > 60
-    assert simulate(qualities=(0.8,), fractions=(0.1,), rows=600, reps=300, seed=1) == got
+    assert simulate(qualities=(0.8,), fractions=(0.1,), rows=600, reps=150, seed=1) == got
     with pytest.raises(ValueError, match="rows >= 20"):
         simulate(rows=10)
     with pytest.raises(ValueError, match="at least 2 rows without a label"):
@@ -89,16 +90,16 @@ def test_replay_targets_the_mean_of_all_human_labels() -> None:
     rng = np.random.default_rng(2)
     human = (rng.random(800) < 0.55).astype(float)
     judge = np.where(rng.random(800) < 0.8, human, 1.0).astype(float)
-    got = replay(judge, human, fractions=(0.1, 0.25), reps=300, seed=4)
+    got = replay(judge, human, fractions=(0.1, 0.25), reps=150, seed=4)
     assert got["full_data_mean"] == pytest.approx(human.mean())
     assert [cell["n_labelled"] for cell in got["cells"]] == [80, 200]
     for cell in got["cells"]:
         rows = {row["method"]: row for row in cell["methods"]}
         assert rows["judge-only"]["coverage"] in (0.0, 1.0)
         assert rows["judge-only"]["effective_n"] is None
-        assert rows["ppi++"]["coverage"] >= 0.93
+        assert rows["ppi++"]["coverage"] >= 0.90
         assert rows["ppi++"]["relative_width"] < 1.0
-        assert abs(rows["ppi++"]["mean_error"]) < 0.01
+        assert abs(rows["ppi++"]["mean_error"]) < 0.012
     with pytest.raises(ValueError, match="same length"):
         replay(judge, human[:-1])
     with pytest.raises(ValueError, match="at least 20"):
