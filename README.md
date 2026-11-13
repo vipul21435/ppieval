@@ -338,6 +338,7 @@ the best `lam` exceeds 1.
 
 ## Licence
 
-MIT. Copyright (c) 2026 Vipul Raj Jha. The tables in `data/` derive from a CC-BY-4.0 dataset; see `data/README.md`.
+MIT. Copyright (c) 2026 Vipul Raj Jha. The tables in `data/` derive from a dataset under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); see `data/README.md` for the source and the changes made.
 
 Built by Vipul Raj Jha · https://vipul21435.github.io

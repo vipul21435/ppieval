@@ -1,9 +1,10 @@
 # Data
 
 The CSV files here are derived from the MT-Bench human judgments,
-https://huggingface.co/datasets/lmsys/mt_bench_human_judgments, published by LMSYS under the CC-BY-4.0 licence
-(stated on the dataset card) and described in Zheng et al., "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena"
-(arXiv:2306.05685).
+https://huggingface.co/datasets/lmsys/mt_bench_human_judgments, published by LMSYS under the Creative Commons
+Attribution 4.0 International licence (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/; the dataset card
+states `cc-by-4.0`) and described in Zheng et al., "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena"
+(arXiv:2306.05685). The derived files are shared under the same licence.
 
 `scripts/fetch_mtbench.py` downloads the `human` and `gpt4_pair` splits and writes these files. Changes made to the
 original: only the verdict columns are kept (no conversation text); the two models of each comparison are put in
