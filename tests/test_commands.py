@@ -153,6 +153,30 @@ def test_pairing_two_systems_by_item() -> None:
         paired_dataset_from_rows([{"item": "q1", "system": "a", "human": 1}], ("a", "b"))
 
 
+def test_two_system_difference_covers_the_true_difference() -> None:
+    """Paired differences through the same code path as ``ppieval compare``; 150 draws."""
+    rng = np.random.default_rng(12)
+    truth, reps, items, labelled = 0.15, 150, 400, 80
+    hits = {"human-only": 0, "ppi++": 0, "judge-only": 0}
+    for _ in range(reps):
+        rows = []
+        for system, skill in (("new", 0.70), ("old", 0.55)):
+            human = rng.random(items) < skill
+            # The judge passes too often, and more so for the new system.
+            judge = human | (rng.random(items) < (0.45 if system == "new" else 0.15))
+            for i in range(items):
+                label = int(human[i]) if i < labelled else ""
+                rows.append({"item": i, "system": system, "judge": int(judge[i]), "human": label})
+        data = paired_dataset_from_rows(rows, ("new", "old"))
+        for est in estimate_all(data.y, data.f, data.f_unlabelled):
+            if est.method in hits:
+                hits[est.method] += est.lo <= truth <= est.hi
+    # 150 draws: the standard error of a coverage estimate near 0.95 is about 0.018.
+    assert 0.89 <= hits["human-only"] / reps <= 1.0
+    assert 0.89 <= hits["ppi++"] / reps <= 1.0
+    assert hits["judge-only"] / reps < 0.5
+
+
 def test_cluster_and_weight_columns() -> None:
     rows = [
         {"judge": 1, "human": 1, "group": "x", "w": 2},
