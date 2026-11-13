@@ -121,6 +121,13 @@ def test_useless_judge_moments_give_the_classical_variance() -> None:
     assert variance_from_moments(0.8, 1.3, 0.0, 50, 5000, lam) == pytest.approx(0.8 / 50)
 
 
+def test_moment_formulas_with_a_constant_judge_or_no_unlabelled_rows() -> None:
+    # A judge with no variance, or no rows for it to add, leaves the classical variance.
+    assert optimal_lambda_from_moments(0.0, 0.0, 50, 5000) == 0.0
+    assert optimal_lambda_from_moments(1.3, 0.9, 50, 0) == 0.0
+    assert variance_from_moments(0.8, 1.3, 0.9, 50, 0, 0.0) == pytest.approx(0.8 / 50)
+
+
 def test_useless_judge_ppi_pp_approaches_classical_with_many_rows() -> None:
     rng = np.random.default_rng(6)
     y = rng.normal(0.0, 1.0, 20_000)

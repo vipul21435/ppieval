@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .data import DataError, Dataset, dataset_from_rows, load_dataset
 from .estimators import (
     Estimate,
     classical_mean,
@@ -17,11 +18,15 @@ from .estimators import (
 __version__ = "0.1.0"
 
 __all__ = [
+    "DataError",
+    "Dataset",
     "Estimate",
     "__version__",
     "classical_mean",
+    "dataset_from_rows",
     "estimate_all",
     "judge_only_mean",
+    "load_dataset",
     "optimal_lambda",
     "optimal_lambda_from_moments",
     "ppi_mean",

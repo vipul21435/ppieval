@@ -47,6 +47,14 @@ def test_empty_table_is_an_error() -> None:
         estimates_table([])
 
 
+def test_markdown_note_about_judge_only_appears_only_with_that_row() -> None:
+    data = small_dataset()
+    estimates = estimate_all(data.y, data.f, data.f_unlabelled)
+    assert "judge-only takes the judge's scores" in estimate_markdown(data, estimates)
+    without = [est for est in estimates if est.method != "judge-only"]
+    assert "judge-only" not in estimate_markdown(data, without)
+
+
 def test_markdown_and_json_agree_on_the_counts() -> None:
     data = small_dataset()
     estimates = estimate_all(data.y, data.f, data.f_unlabelled, level=0.9)
