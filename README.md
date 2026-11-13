@@ -159,12 +159,16 @@ the judge's scores on the `N` rows without a human label.
   `mean(f - y)` with its interval, and a two-sample Kolmogorov-Smirnov test of the judge scores of labelled against
   unlabelled rows, with a warning when it rejects at 0.01: the labelled rows then do not look like a random subset.
 
-Not implemented, from the same literature: Zrnic and Candès, "Cross-Prediction-Powered Inference"
+The same setting, a few human labels and automatic labels on everything, is treated for model evaluation by
+Boyeau, Angelopoulos, Yosef, Malik and Jordan, "AutoEval Done Right: Using Synthetic Data for Model Evaluation"
+([arXiv:2403.07008](https://arxiv.org/abs/2403.07008)). Its estimator of a mean metric such as accuracy is PPI++,
+the ppi++ row above, and it also reports an effective sample size. Its second part, ranking models from pairwise
+comparisons with the Bradley-Terry model, is not implemented here.
+
+Also not implemented: Zrnic and Candès, "Cross-Prediction-Powered Inference"
 ([arXiv:2309.16598](https://arxiv.org/abs/2309.16598)), which trains the predictor on the labelled data itself (the
-judge here is given); Boyeau, Angelopoulos, Yosef, Malik and Jordan, "AutoEval Done Right: Using Synthetic Data for
-Model Evaluation" ([arXiv:2403.07008](https://arxiv.org/abs/2403.07008)), which applies these ideas to model
-evaluation; and Chatzi, Straitouri, Thejaswi and Gomez Rodriguez, "Prediction-Powered Ranking of Large Language
-Models" ([arXiv:2402.17826](https://arxiv.org/abs/2402.17826)), which builds rank sets for many models.
+judge here is given); and Chatzi, Straitouri, Thejaswi and Gomez Rodriguez, "Prediction-Powered Ranking of Large
+Language Models" ([arXiv:2402.17826](https://arxiv.org/abs/2402.17826)), which builds rank sets for many models.
 
 ## Results on real public data
 
