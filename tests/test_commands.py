@@ -107,6 +107,20 @@ def test_replay_targets_the_mean_of_all_human_labels() -> None:
         replay(judge, human, fractions=(1.0,), reps=1)
 
 
+def test_a_cell_does_not_depend_on_the_other_cells_requested() -> None:
+    rng = np.random.default_rng(6)
+    human = (rng.random(500) < 0.4).astype(float)
+    judge = np.where(rng.random(500) < 0.8, human, 1.0 - human)
+    alone = replay(judge, human, fractions=(0.1,), reps=40, seed=7)["cells"][0]
+    after = replay(judge, human, fractions=(0.05, 0.1), reps=40, seed=7)["cells"][1]
+    assert alone == after
+    assert alone != replay(judge, human, fractions=(0.1,), reps=40, seed=8)["cells"][0]
+
+    one = simulate(qualities=(0.8,), fractions=(0.1,), rows=300, reps=30, seed=7)["cells"][0]
+    grid = simulate(qualities=(0.6, 0.8), fractions=(0.05, 0.1), rows=300, reps=30, seed=7)
+    assert one == grid["cells"][3]
+
+
 def test_pairing_two_systems_by_item() -> None:
     rows = [
         {"item": "q1", "system": "a", "judge": 1, "human": 1},

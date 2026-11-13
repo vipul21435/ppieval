@@ -202,39 +202,39 @@ $ ppieval replay data/mtbench_winrate_gpt-3.5-turbo.csv --fractions 0.05 0.1 0.2
 
 | method | coverage | mean width | vs human-only | mean error | effective n |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| human-only | 0.951 | 0.1824 | 1.00 | -0.0013 | 74 |
+| human-only | 0.945 | 0.1820 | 1.00 | +0.0002 | 74 |
 | judge-only | 0.000 | 0.0413 | 0.23 | -0.0315 |  |
-| ppi | 0.945 | 0.1909 | 1.05 | +0.0018 | 67 |
-| ppi++ | 0.947 | 0.1598 | 0.88 | +0.0011 | 96 |
-| ppi-stratified | 0.949 | 0.1629 | 0.89 | -0.0001 | 92 |
+| ppi | 0.951 | 0.1893 | 1.04 | -0.0008 | 68 |
+| ppi++ | 0.948 | 0.1589 | 0.87 | +0.0010 | 97 |
+| ppi-stratified | 0.945 | 0.1619 | 0.89 | -0.0000 | 93 |
 
 ## 10 % of human labels kept (n = 148)
 
 | method | coverage | mean width | vs human-only | mean error | effective n |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| human-only | 0.957 | 0.1289 | 1.00 | -0.0009 | 148 |
+| human-only | 0.957 | 0.1287 | 1.00 | +0.0017 | 148 |
 | judge-only | 0.000 | 0.0413 | 0.32 | -0.0315 |  |
-| ppi | 0.956 | 0.1379 | 1.07 | +0.0001 | 129 |
-| ppi++ | 0.953 | 0.1139 | 0.88 | -0.0001 | 190 |
-| ppi-stratified | 0.955 | 0.1150 | 0.89 | -0.0004 | 186 |
+| ppi | 0.956 | 0.1379 | 1.07 | +0.0033 | 129 |
+| ppi++ | 0.956 | 0.1137 | 0.88 | +0.0030 | 190 |
+| ppi-stratified | 0.958 | 0.1148 | 0.89 | +0.0024 | 186 |
 
 ## 25 % of human labels kept (n = 370)
 
 | method | coverage | mean width | vs human-only | mean error | effective n |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| human-only | 0.975 | 0.0815 | 1.00 | -0.0003 | 370 |
+| human-only | 0.975 | 0.0815 | 1.00 | -0.0007 | 370 |
 | judge-only | 0.000 | 0.0413 | 0.51 | -0.0315 |  |
-| ppi | 0.972 | 0.0958 | 1.18 | -0.0001 | 267 |
-| ppi++ | 0.984 | 0.0738 | 0.91 | -0.0000 | 451 |
-| ppi-stratified | 0.983 | 0.0741 | 0.91 | -0.0002 | 447 |
+| ppi | 0.971 | 0.0956 | 1.17 | +0.0004 | 269 |
+| ppi++ | 0.978 | 0.0738 | 0.90 | -0.0001 | 452 |
+| ppi-stratified | 0.979 | 0.0740 | 0.91 | -0.0003 | 449 |
 ```
 
 Reading it:
 
-- ppi++ intervals are 0.88, 0.88 and 0.91 times as wide as human-only at 5, 10 and 25 % kept, with coverage 0.947,
-  0.953 and 0.984. The effective sample size is 96, 190 and 451 human labels for 74, 148 and 370 kept.
-- Plain ppi (`lam = 1`) is wider than human-only here, 1.05, 1.07 and 1.18 times, with coverage 0.945, 0.956 and
-  0.972: GPT-4's verdicts are not close enough to the human votes for the untuned estimator to pay off.
+- ppi++ intervals are 0.87, 0.88 and 0.90 times as wide as human-only at 5, 10 and 25 % kept, with coverage 0.948,
+  0.956 and 0.978. The effective sample size is 97, 190 and 452 human labels for 74, 148 and 370 kept.
+- Plain ppi (`lam = 1`) is wider than human-only here, 1.04, 1.07 and 1.17 times, with coverage 0.951, 0.956 and
+  0.971: GPT-4's verdicts are not close enough to the human votes for the untuned estimator to pay off.
 - The judge-only interval uses no human label, so it is the same in every repetition. It does not contain the
   target: GPT-4's win rate for this model is 0.6204 against 0.6519 from people, and its interval is 0.0413 wide.
   Its coverage is 0.
@@ -247,16 +247,19 @@ All six models at 10 % kept, 1,000 repetitions each (`python examples/mtbench_re
 
 | model | votes | human win rate | GPT-4 judge | judge-only covers | ppi++ coverage | ppi++ width vs human-only | effective n (of n) |
 | --- | ---: | ---: | ---: | --- | ---: | ---: | ---: |
-| alpaca-13b | 1018 | 0.2868 | 0.2333 | no | 0.945 | 0.87 | 134 (102) |
-| claude-v1 | 996 | 0.6501 | 0.6827 | no | 0.955 | 0.89 | 126 (100) |
-| gpt-3.5-turbo | 1478 | 0.6519 | 0.6204 | no | 0.948 | 0.88 | 189 (148) |
-| gpt-4 | 1029 | 0.7328 | 0.8508 | no | 0.951 | 0.96 | 111 (103) |
-| llama-13b | 1083 | 0.1542 | 0.1117 | no | 0.946 | 0.93 | 125 (108) |
-| vicuna-13b-v1.2 | 1106 | 0.4801 | 0.4738 | yes | 0.951 | 0.87 | 146 (111) |
+| alpaca-13b | 1018 | 0.2868 | 0.2333 | no | 0.954 | 0.87 | 134 (102) |
+| claude-v1 | 996 | 0.6501 | 0.6827 | no | 0.952 | 0.89 | 126 (100) |
+| gpt-3.5-turbo | 1478 | 0.6519 | 0.6204 | no | 0.956 | 0.88 | 190 (148) |
+| gpt-4 | 1029 | 0.7328 | 0.8508 | no | 0.941 | 0.96 | 111 (103) |
+| llama-13b | 1083 | 0.1542 | 0.1117 | no | 0.941 | 0.93 | 126 (108) |
+| vicuna-13b-v1.2 | 1106 | 0.4801 | 0.4738 | yes | 0.956 | 0.87 | 146 (111) |
 
-The judge-only interval contains the human win rate for one model of six. GPT-4 as judge puts GPT-4's own win rate
-at 0.8508 where people put it at 0.7328; ppi++ keeps its coverage there but gains little (0.96 of the human-only
-width). Votes are treated as independent rows although several votes share a question.
+Each kept fraction has its own random generator, seeded by `--seed` and the number of labels kept, so the
+gpt-3.5-turbo row repeats the 10 % cell of the table above. The judge-only interval contains the human win rate for
+one model of six. GPT-4 as judge puts GPT-4's own win rate at 0.8508 where people put it at 0.7328; ppi++ covers
+0.941 of the time there and gains little (0.96 of the human-only width). Over the six models ppi++ coverage runs from
+0.941 to 0.956 and its width from 0.87 to 0.96 of human-only. Votes are treated as independent rows although several
+votes share a question.
 
 ### Simulation
 
@@ -275,29 +278,30 @@ $ ppieval simulate --qualities 0.6 0.9 --fractions 0.1 --reps 1000 --seed 0
 
 | method | coverage | mean width | vs human-only | mean error | effective n |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| human-only | 0.936 | 0.1386 | 1.00 | +0.0014 | 200 |
-| judge-only | 0.000 | 0.0429 | 0.31 | +0.1001 |  |
-| ppi | 0.941 | 0.1785 | 1.29 | +0.0024 | 120 |
-| ppi++ | 0.942 | 0.1356 | 0.98 | +0.0017 | 209 |
-| ppi-stratified | 0.942 | 0.1362 | 0.98 | +0.0015 | 207 |
-| rogan-gladen | 0.981 | 0.6874 | 4.96 | +0.0028 | 8 |
+| human-only | 0.937 | 0.1386 | 1.00 | -0.0004 | 200 |
+| judge-only | 0.000 | 0.0429 | 0.31 | +0.1007 |  |
+| ppi | 0.940 | 0.1782 | 1.29 | +0.0007 | 121 |
+| ppi++ | 0.940 | 0.1355 | 0.98 | -0.0001 | 209 |
+| ppi-stratified | 0.941 | 0.1361 | 0.98 | -0.0003 | 207 |
+| rogan-gladen | 0.991 | 0.6845 | 4.94 | +0.0044 | 8 |
 
 ## judge quality 0.9 (sensitivity 1, specificity 0.8), 10 % of human labels kept (n = 200)
 
 | method | coverage | mean width | vs human-only | mean error | effective n |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| human-only | 0.945 | 0.1386 | 1.00 | -0.0012 | 200 |
+| human-only | 0.952 | 0.1386 | 1.00 | +0.0007 | 200 |
 | judge-only | 0.000 | 0.0429 | 0.31 | +0.1002 |  |
-| ppi | 0.950 | 0.0945 | 0.68 | +0.0001 | 428 |
-| ppi++ | 0.956 | 0.0874 | 0.63 | +0.0005 | 500 |
-| ppi-stratified | 0.957 | 0.0877 | 0.63 | -0.0002 | 497 |
-| rogan-gladen | 0.948 | 0.1141 | 0.82 | -0.0010 | 288 |
+| ppi | 0.940 | 0.0942 | 0.68 | +0.0007 | 430 |
+| ppi++ | 0.933 | 0.0872 | 0.63 | +0.0015 | 503 |
+| ppi-stratified | 0.939 | 0.0874 | 0.63 | +0.0007 | 500 |
+| rogan-gladen | 0.939 | 0.1139 | 0.82 | -0.0005 | 290 |
 ```
 
 With a weak judge (sensitivity + specificity = 1.2) ppi++ falls back to roughly the human-only width while plain ppi
 is 1.29 times wider, and the Rogan-Gladen interval is nearly five times wider than human-only. With a good judge
-ppi++ is 0.63 times the human-only width. The judge-only interval never covers: by construction its mean is 0.10
-above the truth.
+ppi++ is 0.63 times the human-only width. Its coverage in the two cells is 0.940 and 0.933, a little under the
+nominal 0.95 (the Monte Carlo standard error of each figure is 0.007). The judge-only interval never covers: by
+construction its mean is 0.10 above the truth.
 
 ## Tests
 

@@ -74,11 +74,14 @@ def simulate(
     prevalence of 0.5 its mean score is exactly ``bias`` above the truth. A
     fraction of the rows, chosen uniformly, keeps its human label. Coverage
     is measured against ``prevalence``.
+
+    Each cell has its own generator, seeded by ``seed``, the judge quality
+    and the number of labelled rows, so its result does not depend on which
+    other cells are run with it.
     """
     _check_level(level)
     if rows < 20 or reps < 1 or not 0.0 < prevalence < 1.0:
         raise ValueError("need rows >= 20, reps >= 1 and a prevalence strictly between 0 and 1")
-    rng = np.random.default_rng(seed)
     cells = []
     for quality in qualities:
         sens = min(1.0, max(0.0, quality + bias))
@@ -87,6 +90,7 @@ def simulate(
             n = max(2, round(fraction * rows))
             if n > rows - 2:
                 raise ValueError("each fraction must leave at least 2 rows without a label")
+            rng = np.random.default_rng([seed, n, round(quality * 1_000_000)])
             tally = _Tally(prevalence)
             for _ in range(reps):
                 human = (rng.random(rows) < prevalence).astype(float)
@@ -129,7 +133,9 @@ def replay(
     chosen ``fraction`` of the rows, run every estimator, and record whether
     its interval contains the mean of all human labels, and its width. The
     judge-only interval uses no human label, so it is the same in every
-    repetition and its coverage is 0 or 1.
+    repetition and its coverage is 0 or 1. Each fraction has its own
+    generator, seeded by ``seed`` and the number of labels kept, so its
+    result does not depend on which other fractions are run with it.
 
     ``effective_n`` is ``n`` times the mean squared width of the human-only
     interval over that of the method. Because the target is the mean over the rows at
@@ -145,12 +151,12 @@ def replay(
     if total < 20 or reps < 1:
         raise ValueError("a replay needs at least 20 fully labelled rows and reps >= 1")
     truth = float(np.mean(y_all))
-    rng = np.random.default_rng(seed)
     cells = []
     for fraction in fractions:
         n = max(2, round(fraction * total))
         if n > total - 2:
             raise ValueError("each fraction must leave at least 2 rows without a label")
+        rng = np.random.default_rng([seed, n])
         tally = _Tally(truth)
         for _ in range(reps):
             order = rng.permutation(total)
