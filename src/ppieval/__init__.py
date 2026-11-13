@@ -1,0 +1,7 @@
+"""ppieval: combine a few human labels with many automatic judgments."""
+
+from __future__ import annotations
+
+__version__ = "0.1.0"
+
+__all__ = ["__version__"]
